@@ -17,7 +17,20 @@ COMBINATIONS = {
 }
 
 # Editable future demand forecast with simple number inputs
+# Editable future demand forecast with simple number inputs
 st.subheader("Future Demand Forecast (next 7 weeks) – Edit as needed")
+
+# Hardcoded defaults (moved here so we don't depend on removed future_demand)
+default_demand = {
+    "Bird": [3, 2, 0, 0, 7, 7, 0],
+    "Tree": [5, 5, 5, 5, 5, 5, 5],
+    "Sunset": [2, 2, 2, 4, 4, 4, 4],
+    "Railroad": [3, 3, 3, 3, 3, 3, 3],
+    "Airplane": [5, 5, 5, 8, 8, 12, 5],
+    "Stars": [3, 3, 3, 3, 3, 3, 3],
+    "Rhinoceros": [2, 2, 6, 6, 2, 2, 2],
+    "Peasant": [4, 4, 4, 3, 3, 3, 3],
+}
 
 demand_inputs = {}
 for sku in SKUS:
@@ -25,19 +38,8 @@ for sku in SKUS:
     demand_inputs[sku] = []
     cols = st.columns(7)
     for week in range(1, 8):
-        with cols[week-1]:
-            # Use original hardcoded values as defaults (adjust these if your defaults are different)
-            defaults = {
-                "Bird": [3, 2, 0, 0, 7, 7, 0],
-                "Tree": [5, 5, 5, 5, 5, 5, 5],
-                "Sunset": [2, 2, 2, 4, 4, 4, 4],
-                "Railroad": [3, 3, 3, 3, 3, 3, 3],
-                "Airplane": [5, 5, 5, 8, 8, 12, 5],
-                "Stars": [3, 3, 3, 3, 3, 3, 3],
-                "Rhinoceros": [2, 2, 6, 6, 2, 2, 2],
-                "Peasant": [4, 4, 4, 3, 3, 3, 3],
-            }
-            default_value = defaults.get(sku, [0]*7)[week-1]
+        with cols[week - 1]:
+            default_value = default_demand.get(sku, [0] * 7)[week - 1]
             demand_inputs[sku].append(
                 st.number_input(
                     f"Week {week}",
@@ -48,13 +50,15 @@ for sku in SKUS:
                 )
             )
 
-# Preview button to see edited values in table form
+# Preview button
 if st.button("Preview Updated Demand", key="preview_demand"):
     updated_demand = pd.DataFrame(
         {sku: demand_inputs[sku] for sku in SKUS},
         index=list(range(1, 8))
     )
     st.dataframe(updated_demand.style.format("{:d}"), use_container_width=True)
+
+
 
 # UI
 st.title("Fabric Print Optimizer")
