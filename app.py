@@ -226,3 +226,6 @@ if st.button("Run Optimization", type="primary"):
             st.metric("Total Fabric Cost", f"${result['total_cost']:.2f}")
         with col2:
             st.metric("Ending Surplus Value", f"${result['residual_value']:.2f}")
+
+
+#updated 021826
