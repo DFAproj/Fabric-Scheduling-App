@@ -16,19 +16,45 @@ COMBINATIONS = {
     "C6": {"skus": ["Railroad", "Rhinoceros", "Airplane", "Tree", "Stars"], "cost": 17},
 }
 
-# Default hardcoded demand (used as initial values)
-default_demand = {
-    "Week": list(range(1, 8)),
-    "Bird": [3, 2, 0, 0, 7, 7, 0],
-    "Tree": [5, 5, 5, 5, 5, 5, 5],
-    "Sunset": [2, 2, 2, 4, 4, 4, 4],
-    "Railroad": [3, 3, 3, 3, 3, 3, 3],
-    "Airplane": [5, 5, 5, 8, 8, 12, 5],
-    "Stars": [3, 3, 3, 3, 3, 3, 3],
-    "Rhinoceros": [2, 2, 6, 6, 2, 2, 2],
-    "Peasant": [4, 4, 4, 3, 3, 3, 3],
-}
-future_demand = pd.DataFrame(default_demand).set_index("Week")
+# Editable future demand forecast with simple number inputs
+st.subheader("Future Demand Forecast (next 7 weeks) – Edit as needed")
+
+demand_inputs = {}
+for sku in SKUS:
+    st.markdown(f"**{sku}**")
+    demand_inputs[sku] = []
+    cols = st.columns(7)
+    for week in range(1, 8):
+        with cols[week-1]:
+            # Use original hardcoded values as defaults (adjust these if your defaults are different)
+            defaults = {
+                "Bird": [3, 2, 0, 0, 7, 7, 0],
+                "Tree": [5, 5, 5, 5, 5, 5, 5],
+                "Sunset": [2, 2, 2, 4, 4, 4, 4],
+                "Railroad": [3, 3, 3, 3, 3, 3, 3],
+                "Airplane": [5, 5, 5, 8, 8, 12, 5],
+                "Stars": [3, 3, 3, 3, 3, 3, 3],
+                "Rhinoceros": [2, 2, 6, 6, 2, 2, 2],
+                "Peasant": [4, 4, 4, 3, 3, 3, 3],
+            }
+            default_value = defaults.get(sku, [0]*7)[week-1]
+            demand_inputs[sku].append(
+                st.number_input(
+                    f"Week {week}",
+                    min_value=0,
+                    value=int(default_value),
+                    step=1,
+                    key=f"demand_{sku}_week{week}"
+                )
+            )
+
+# Preview button to see edited values in table form
+if st.button("Preview Updated Demand", key="preview_demand"):
+    updated_demand = pd.DataFrame(
+        {sku: demand_inputs[sku] for sku in SKUS},
+        index=list(range(1, 8))
+    )
+    st.dataframe(updated_demand.style.format("{:d}"), use_container_width=True)
 
 # UI
 st.title("Fabric Print Optimizer")
