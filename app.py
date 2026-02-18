@@ -80,7 +80,19 @@ st.markdown("**Current inventory summary**")
 st.dataframe(pd.Series(inventory, name="Units").to_frame().style.format("{:,d}"), use_container_width=False)
 
 # Editable Future Demand Forecast
-st.subheader("Future Demand Forecast (next 7 weeks) - Edit values below")
+st.subheader("Future Demand Forecast (next 7 weeks) – Edit as needed")
+
+# Hardcoded defaults (safe fallback, no DataFrame needed)
+default_demand = {
+    "Bird": [3, 2, 0, 0, 7, 7, 0],
+    "Tree": [5, 5, 5, 5, 5, 5, 5],
+    "Sunset": [2, 2, 2, 4, 4, 4, 4],
+    "Railroad": [3, 3, 3, 3, 3, 3, 3],
+    "Airplane": [5, 5, 5, 8, 8, 12, 5],
+    "Stars": [3, 3, 3, 3, 3, 3, 3],
+    "Rhinoceros": [2, 2, 6, 6, 2, 2, 2],
+    "Peasant": [4, 4, 4, 3, 3, 3, 3],
+}
 
 demand_inputs = {}
 for sku in SKUS:
@@ -88,20 +100,20 @@ for sku in SKUS:
     demand_inputs[sku] = []
     cols = st.columns(7)
     for week in range(1, 8):
-        with cols[week-1]:
-            default_value = future_demand.loc[week, sku]
+        with cols[week - 1]:
+            default_value = default_demand.get(sku, [0] * 7)[week - 1]
             demand_inputs[sku].append(
                 st.number_input(
                     f"Week {week}",
                     min_value=0,
                     value=int(default_value),
                     step=1,
-                    key=f"dem_{sku}_{week}"
+                    key=f"demand_{sku}_week{week}"
                 )
             )
 
-# Button to show updated table (optional preview)
-if st.button("Preview Updated Forecast", key="preview_forecast"):
+# Preview button to see edited values in table form
+if st.button("Preview Updated Demand", key="preview_demand"):
     updated_demand = pd.DataFrame(
         {sku: demand_inputs[sku] for sku in SKUS},
         index=list(range(1, 8))
