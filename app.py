@@ -4,7 +4,6 @@ from datetime import datetime
 
 st.set_page_config(page_title="Print Optimizer", layout="wide")
 
-# SKUs and combinations (unchanged)
 SKUS = ["Bird", "Tree", "Sunset", "Railroad", "Airplane", "Stars", "Rhinoceros", "Peasant"]
 
 COMBINATIONS = {
@@ -16,11 +15,7 @@ COMBINATIONS = {
     "C6": {"skus": ["Railroad", "Rhinoceros", "Airplane", "Tree", "Stars"], "cost": 17},
 }
 
-# Editable future demand forecast with simple number inputs
-# Editable future demand forecast with simple number inputs
-st.subheader("Future Demand Forecast (next 7 weeks) – Edit as needed")
-
-# Hardcoded defaults (moved here so we don't depend on removed future_demand)
+# Hardcoded defaults for demand inputs
 default_demand = {
     "Bird": [3, 2, 0, 0, 7, 7, 0],
     "Tree": [5, 5, 5, 5, 5, 5, 5],
@@ -31,6 +26,27 @@ default_demand = {
     "Rhinoceros": [2, 2, 6, 6, 2, 2, 2],
     "Peasant": [4, 4, 4, 3, 3, 3, 3],
 }
+
+st.title("Fabric Print Optimizer")
+st.caption(f"Date: {datetime.now().strftime('%Y-%m-%d')}")
+
+st.markdown("### Current Situation")
+
+# Current Inventory
+st.subheader("Current Inventory (beginning of this week)")
+
+cols = st.columns(4)
+inventory = {}
+for i, sku in enumerate(SKUS):
+    col = cols[i % 4]
+    with col:
+        inventory[sku] = st.number_input(sku, min_value=0, value=0, step=1, key=f"inv_{sku}")
+
+st.markdown("**Current inventory summary**")
+st.dataframe(pd.Series(inventory, name="Units").to_frame().style.format("{:,d}"), use_container_width=False)
+
+# Editable Future Demand
+st.subheader("Future Demand Forecast (next 7 weeks) – Edit as needed")
 
 demand_inputs = {}
 for sku in SKUS:
@@ -46,73 +62,10 @@ for sku in SKUS:
                     min_value=0,
                     value=int(default_value),
                     step=1,
-                    key=f"demand_{sku}_week{week}"
+                    key=f"demand_{sku}_w{week}_{sku}"
                 )
             )
 
-# Preview button
-if st.button("Preview Updated Demand", key="preview_demand"):
-    updated_demand = pd.DataFrame(
-        {sku: demand_inputs[sku] for sku in SKUS},
-        index=list(range(1, 8))
-    )
-    st.dataframe(updated_demand.style.format("{:d}"), use_container_width=True)
-
-
-
-# UI
-st.title("Fabric Print Optimizer")
-st.caption(f"Date: {datetime.now().strftime('%Y-%m-%d')}")
-
-st.markdown("### Current Situation")
-
-# Current Inventory (unchanged)
-st.subheader("Current Inventory (beginning of this week)")
-
-cols = st.columns(4)
-inventory = {}
-for i, sku in enumerate(SKUS):
-    col = cols[i % 4]
-    with col:
-        inventory[sku] = st.number_input(sku, min_value=0, value=0, step=1, key=f"inv_{sku}")
-
-st.markdown("**Current inventory summary**")
-st.dataframe(pd.Series(inventory, name="Units").to_frame().style.format("{:,d}"), use_container_width=False)
-
-# Editable Future Demand Forecast
-st.subheader("Future Demand Forecast (next 7 weeks) – Edit as needed")
-
-# Hardcoded defaults for safety (no old DataFrame reference)
-default_demand = {
-    "Bird": [3, 2, 0, 0, 7, 7, 0],
-    "Tree": [5, 5, 5, 5, 5, 5, 5],
-    "Sunset": [2, 2, 2, 4, 4, 4, 4],
-    "Railroad": [3, 3, 3, 3, 3, 3, 3],
-    "Airplane": [5, 5, 5, 8, 8, 12, 5],
-    "Stars": [3, 3, 3, 3, 3, 3, 3],
-    "Rhinoceros": [2, 2, 6, 6, 2, 2, 2],
-    "Peasant": [4, 4, 4, 3, 3, 3, 3],
-}
-
-demand_inputs = {}
-for sku in SKUS:
-    st.markdown(f"**{sku}**")
-    demand_inputs[sku] = []
-    cols = st.columns(7)
-    for week in range(1, 8):
-        with cols[week - 1]:
-            default_value = default_demand.get(sku, [0] * 7)[week - 1]
-            demand_inputs[sku].append(
-                st.number_input(
-                    label=f"Week {week}",
-                    min_value=0,
-                    value=int(default_value),
-                    step=1,
-                    key=f"demand_{sku}_w{week}_{sku}"  # Extra suffix to guarantee uniqueness
-                )
-            )
-
-# Preview button
 if st.button("Preview Updated Demand", key="preview_demand_button"):
     updated_demand = pd.DataFrame(
         {sku: demand_inputs[sku] for sku in SKUS},
@@ -120,7 +73,7 @@ if st.button("Preview Updated Demand", key="preview_demand_button"):
     )
     st.dataframe(updated_demand.style.format("{:d}"), use_container_width=True)
 
-with st.expander("Available Combinations (reference)"):
+with st.expander("Available Combinations"):
     combo_rows = []
     for name, info in COMBINATIONS.items():
         combo_rows.append({
@@ -132,5 +85,5 @@ with st.expander("Available Combinations (reference)"):
 
 st.markdown("---")
 if st.button("Run Optimization", type="primary"):
-    st.info("Optimizer not yet implemented — this version allows editing demand and inventory.")
+    st.info("Optimizer not yet implemented — this version allows editing inventory and demand.")
     st.write("Current inventory:", inventory)
