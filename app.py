@@ -44,6 +44,36 @@ for i, sku in enumerate(SKUS):
 
 st.markdown("**Current inventory summary**")
 st.dataframe(pd.Series(inventory, name="Units").to_frame().style.format("{:,d}"), use_container_width=False)
+# Last Week Actual Demand
+st.subheader("Last Week Actual Demand (enter real numbers from last week)")
+
+actual_last_week = {}
+cols_actual = st.columns(4)
+for i, sku in enumerate(SKUS):
+    with cols_actual[i % 4]:
+        actual_last_week[sku] = st.number_input(
+            sku,
+            min_value=0,
+            value=0,
+            step=1,
+            key=f"actual_last_week_{sku}"
+        )
+
+st.markdown("**Last week actual summary**")
+st.dataframe(
+    pd.Series(actual_last_week, name="Units").to_frame().style.format("{:,d}"),
+    use_container_width=False
+)
+
+# Button to apply actuals (subtract from current inventory)
+if st.button("Apply Last Week Actuals to Inventory", key="apply_actuals"):
+    adjusted_inventory = {sku: inventory[sku] - actual_last_week[sku] for sku in SKUS}
+    st.success("Adjusted inventory after subtracting last week's actual demand:")
+    st.dataframe(
+        pd.Series(adjusted_inventory, name="Adjusted Units").to_frame().style.format("{:,d}"),
+        use_container_width=False
+    )
+    # Future: optimizer can use adjusted_inventory as starting point
 
 # Editable Future Demand
 st.subheader("Future Demand Forecast (next 7 weeks) – Edit as needed")
