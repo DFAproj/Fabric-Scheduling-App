@@ -145,7 +145,7 @@ def run_optimizer(current_inventory, actual_last_week, demand_inputs, horizon=7)
 
     # Max fabrics per week
     for w in range(horizon):
-        prob += lpSum(x[c, w] for c in COMBINATIONS) <= 35
+        prob += lpSum(x[c, w] for c in COMBINATIONS) <= 100
 
     # Solve
     prob.solve(PULP_CBC_CMD(msg=0))
